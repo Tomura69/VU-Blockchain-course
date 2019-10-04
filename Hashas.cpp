@@ -42,6 +42,8 @@ int main(int argc, char const *argv[]){
 		Skaitymas(hashvalue);
 	}
 
+	if (hashvalue >= 96 && hashvalue <= 102) hashvalue = hashvalue + int(input[0]);
+
 	Hash(hashvalue, hashFinal);
 
 	cout << "HASH_VALUE: " << hashFinal << endl;
