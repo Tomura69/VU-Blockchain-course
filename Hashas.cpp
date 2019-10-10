@@ -43,6 +43,9 @@ int main(int argc, char const *argv[]){
 		for (int i = 0; i < input.size(); i++){
 			hashvalue = hashvalue + int(input[i]);
 		}
+		hashvalue = hashvalue + input.size() * input[0] - input[1];
+		Hash(hashvalue, hashFinal);
+		cout << "HASH_VALUE: " << hashFinal << endl;
 	}
 	if (int(choice[0]) == 49){
 		Skaitymas(hashvalue);
@@ -92,7 +95,7 @@ void Skaitymas (long long & hashvalue){
 			for (int i = 0; i < input.size(); i++){
 				hashvalue = hashvalue + int(input[i]);
 			}
-			hashvalue = hashvalue * input.size();
+			hashvalue = hashvalue + input.size() * input[0] - input[1];
 			if (fr.is_open()){
         		Hash(hashvalue, hashFinal);
         		fr << hashFinal << endl;
@@ -111,7 +114,7 @@ void Skaitymas (long long & hashvalue){
 	        fd1 >> z;
 	        hasher.insert(std::pair<std::string, unsigned int>(z, 1));
 	    }
-	    std::cout << "Nesutapusiu hashu skaicius: " << hasher.size() << endl;
+	    std::cout << "Nesutapusiu hashu skaicius: " << hasher.size() << " is " << 100000 << endl;
 	    fd1.close();
 	}
     else{
@@ -138,7 +141,7 @@ void Test_Konstitucija (long long & hashvalue){
 		for (int i = 0; i < input.size(); i++){
 			hashvalue = hashvalue + int(input[i]);
 		}
-		hashvalue = hashvalue * input.size();
+		hashvalue = hashvalue + input.size() * input[0] - input[1];
 		auto startas = std::chrono::system_clock::now();
 		Hash(hashvalue, hashFinal);
 		auto pabaiga = std::chrono::system_clock::now();
@@ -167,7 +170,7 @@ void Test_Paprastas (int uzduotis, long long & hashvalue){
 			hashvalue = hashvalue + int(input[i]);
 		}
 	}
-	hashvalue = hashvalue * input.size();
+	hashvalue = hashvalue + input.size() * input[0]  - input[1];
 	fd.close();
 }
 

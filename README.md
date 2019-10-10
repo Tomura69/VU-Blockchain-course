@@ -23,28 +23,28 @@ Naudoti programą yra labai paprasta:
 
 | Failai  | Output |
 | ------------- | ------------- |
-| test1.md (L)  | 974b67120f56b50378fd126a974b671  |
-| test2.md (p) | 6a56f2012d1f7867b340759b6a56f20  |
+| test1.md (L)  | b73dcdcfc11d992357ee9919451f179c  |
+| test2.md (p) | 15354a2feca5dda278e5dd0dc4ab443c  |
 
 2. Užduotis: du failai su visiškai skirtingais tekstais (virš 10000 simbolių)
 
 | Failai  | Output |
 | ------------- | ------------- |
-| test3.md (99999 simbolių) | fb19d527100423fb6756a867fb19d52  |
-| test4.md (~100000 simbolių)  | b957043b7687f1d2102f65a6b957043  |
+| test3.md (99999 simbolių) | f069e02a3b02edc58ab5c7e2fa75de6d  |
+| test4.md (~100000 simbolių)  | 9a295f331cd05bde290c760f96a3c77d  |
 
 3. Užduotis: failai skiriasi tik vienu simboiu
 
 | Inputas  | Output |
 | ------------- | ------------- |
-| test5.md (paprastas tekstas) | 576609e1752f7377f8009dfb49c5f560 |
-| test6.md (tekste pakeista paskutinė raidė)  | 61f70b501649a2d8356f27b761f70b5  |
+| test5.md (paprastas tekstas) | fa62e5fd916af2c4b57ebc82f9ea563e |
+| test6.md (tekste pakeista paskutinė raidė)  | 09d68f4dcf9df6225b4b5a2b8ef224d4  |
 
 4. Užduotis: tuščias failas
 
 | Inputas  | Output |
 | ------------- | ------------- |
-| test7.md  | 7d3404c72540ec76f4b0146844c1e58a  |
+| test7.md  | 0fe4f2cafe4f1ec7e935a6a680dedafa  |
 
 #### 2 dalis
 
@@ -55,3 +55,13 @@ Ištirkite Jūsų sukurtos hash funkcijos efektyvumą: tuo tikslu suhash'uokite 
 | 1  | 0.006505 s |
 | 2  | 0.0065179 s  |
 | 3  | 0.0071385 s |
+
+#### 3 dalis
+
+Susigeneruoti bent 100 000 atsitiktinių simbolių eilučių (string'ų) porų ir patikrinti hashu pasikartojimų
+
+| Bandymas  | Hashu pasikartojimas |
+| ------------- | ------------- |
+| 1  | Nesutapusiu hashu skaicius: 100000 is 100000 |
+| 2  | Nesutapusiu hashu skaicius: 100000 is 100000  |
+| 3  | Nesutapusiu hashu skaicius: 100000 is 100000 |
