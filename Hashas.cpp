@@ -19,6 +19,9 @@ using std::endl;
 
 void Hash (long long hashvalue, std::string & hashFinal);
 void Skaitymas (long long & hashvalue);
+void Generuoti ();
+void Test_Konstitucija (long long & hashvalue);
+void Test_Paprastas (int uzduotis, long long & hashvalue);
 
 int main(int argc, char const *argv[]){
 	std::string input, hashFinal;
@@ -44,12 +47,6 @@ int main(int argc, char const *argv[]){
 	if (int(choice[0]) == 49){
 		Skaitymas(hashvalue);
 	}
-
-	hashvalue = hashvalue + input.size();
-
-	Hash(hashvalue, hashFinal);
-
-	cout << "HASH_VALUE: " << hashFinal << endl;
 	return 0;
 }
 
@@ -65,25 +62,30 @@ void Skaitymas (long long & hashvalue){
 		cout << "5-as - Tekstas" << endl;
 		cout << "6-as - Tekstas, su vienu skirtingu simboliu" << endl;
 		cout << "7-as - Tuscias failas" << endl;
-		cout << "8-as - Collision testas" << endl;
+		cout << "8-as - Konstitucijos hashavimas" << endl;
+		cout << "9-as - Collision testas" << endl;
 		std::cin >> uzduotis;
-		if (uzduotis >= 1 && uzduotis <= 8) break;
+		if (uzduotis >= 1 && uzduotis <= 9) break;
 		else cout << "Blogai pasirinkote faila" << endl;
 	}
 
+	std::string hashFinal;
     if (uzduotis == 8){
-    	//Generuoti();
-    	//std::map<std::string, int>::iterator it = mapOfWords.begin();
-    	std::ifstream fd("konstitucija.md");
-		std::string input, hashFinal;
-		std::vector<int> hashas;
-		hashvalue = 0;
+    	Test_Konstitucija (hashvalue);
 
+		Hash(hashvalue, hashFinal);
+		cout << "HASH_VALUE: " << hashFinal << endl;
+    }
+    else if (uzduotis == 9){
+    	Generuoti();
+		std::ifstream fd("generuoti_stringai.md");
+		std::ofstream fr("hashai.md");
+		std::string input;
 		if (!fd) {
 	    cout << "Failas neegzistuoja" << endl;
 	    exit(1);
 		}
-		double suma = 0;
+
 		std::cin.ignore();
 		while (!fd.eof()){
 			getline(fd, input);
@@ -91,37 +93,109 @@ void Skaitymas (long long & hashvalue){
 				hashvalue = hashvalue + int(input[i]);
 			}
 			hashvalue = hashvalue * input.size();
+			if (fr.is_open()){
+        		Hash(hashvalue, hashFinal);
+        		fr << hashFinal << endl;
+            }
+            else {
+        		cout << "Negalima sukurti failo" << endl;
+    		}
+        }
+    	fd.close();
+		fr.close();
+		std::map<std::string, unsigned int> hasher;
+	    std::ifstream fd1("hashai.md");
+	    std::string z;
 
-			auto startas = std::chrono::system_clock::now();
-			Hash(hashvalue, hashFinal);
-			auto pabaiga = std::chrono::system_clock::now();
-    		auto uztruko = std::chrono::duration_cast<
-    		std::chrono::duration<double> >(pabaiga - startas).count();
-    		suma = suma + uztruko;
-		}
-		cout << "Konstitucijos eiluciu hashavimas uztruko: " << suma << " sekundziu" << endl;
-		fd.close();
-    }
-
+	    for (int i = 0; i < 100000; i++) {
+	        fd1 >> z;
+	        hasher.insert(std::pair<std::string, unsigned int>(z, 1));
+	    }
+	    std::cout << "Nesutapusiu hashu skaicius: " << hasher.size() << endl;
+	    fd1.close();
+	}
     else{
-		std::string s = std::to_string(uzduotis);
-		std::ifstream fd("test" + s + ".md");
-		std::string input;
+		Test_Paprastas (uzduotis, hashvalue);
 
-		if (!fd) {
+		Hash(hashvalue, hashFinal);
+		cout << "HASH_VALUE: " << hashFinal << endl;
+	}
+}
+
+void Test_Konstitucija (long long & hashvalue){
+	std::ifstream fd("konstitucija.md");
+	std::string input, hashFinal;
+	std::vector<int> hashas;
+	hashvalue = 0;
+	if (!fd) {
 	    cout << "Failas neegzistuoja" << endl;
 	    exit(1);
-		}
-
-		std::cin.ignore();
-		while (!fd.eof()){
-			getline(fd, input);
-			for (int i = 0; i < input.size(); i++){
-				hashvalue = hashvalue + int(input[i]);
-			}
-		}
-		fd.close();
 	}
+	double suma = 0;
+	std::cin.ignore();
+	while (!fd.eof()){
+		getline(fd, input);
+		for (int i = 0; i < input.size(); i++){
+			hashvalue = hashvalue + int(input[i]);
+		}
+		hashvalue = hashvalue * input.size();
+		auto startas = std::chrono::system_clock::now();
+		Hash(hashvalue, hashFinal);
+		auto pabaiga = std::chrono::system_clock::now();
+    	auto uztruko = std::chrono::duration_cast<
+    	std::chrono::duration<double> >(pabaiga - startas).count();
+   		suma = suma + uztruko;
+	}
+	cout << "Konstitucijos eiluciu hashavimas uztruko: " << suma << " sekundziu" << endl;
+	fd.close();
+}
+
+void Test_Paprastas (int uzduotis, long long & hashvalue){
+	std::string s = std::to_string(uzduotis);
+	std::ifstream fd("test" + s + ".md");
+	std::string input;
+
+	if (!fd) {
+	    cout << "Failas neegzistuoja" << endl;
+	    exit(1);
+	}
+
+	std::cin.ignore();
+	while (!fd.eof()){
+		getline(fd, input);
+		for (int i = 0; i < input.size(); i++){
+			hashvalue = hashvalue + int(input[i]);
+		}
+	}
+	hashvalue = hashvalue * input.size();
+	fd.close();
+}
+
+void Generuoti (){
+	// nuo 33 - 126
+	std::random_device rd;
+    std::mt19937 mt(rd());
+    std::uniform_int_distribution<int> range(33, 126);
+    std::ofstream fr("generuoti_stringai.md");
+    char rand;
+    if (fr.is_open()){
+        for (int i = 1; i < 100000; i++){
+            for (int y = 0; y < 5; y++){
+            	rand = range(mt);
+                fr << rand;
+            }
+            fr << ", ";
+            for (int u = 0; u < 5; u++){
+            	rand = range(mt);
+            	fr << rand;
+            }
+            fr << endl;
+        }
+    }
+    else {
+        cout << "Negalima sukurti failo" << endl;
+    }
+    fr.close();
 }
 
 void Hash (long long hashvalue, std::string & hashFinal){
