@@ -10,6 +10,7 @@
 #include <string.h>
 #include <chrono>
 #include <algorithm>
+#include <random>
 #include <iterator> 
 
 using std::cout;
@@ -17,11 +18,14 @@ using std::endl;
 
 void Hash (long long hashvalue, std::string & hashFinal);
 void Skaitymas (long long & hashvalue);
+int random_in_range(int min, int max, int seed);
+int random_in_range(int seed);
 
 int main(int argc, char const *argv[]){
 	std::string input, hashFinal;
 	int choice;
 	long long hashvalue = 0;
+	
 
 	while (true){
 		cout << "Jei norite skaityti duomenis is failu spauskite 1, jei norite ivesti spauskite 2" << endl;
@@ -42,7 +46,7 @@ int main(int argc, char const *argv[]){
 		Skaitymas(hashvalue);
 	}
 
-	if (hashvalue >= 96 && hashvalue <= 102) hashvalue = hashvalue + int(input[0]);
+	hashvalue = hashvalue + int(input[0]) + int(input[1]);
 
 	Hash(hashvalue, hashFinal);
 
@@ -121,8 +125,16 @@ void Skaitymas (long long & hashvalue){
 void Hash (long long hashvalue, std::string & hashFinal){
 	//Paverti kiekviena simboli i skaiciu, tuos skaicius sudedi, padaugini is kazko, kad gauti kosmosa,
 	//padalint i dalis, kad gaut 64 simbolius
-	//char kodai (skaiciai ir raides) nuo 48 iki 122
-	hashvalue = hashvalue * 5468;
+	//char kodai (skaiciai ir raides) nuo 48-57 iki 97-102
+	
+	//std::default_random_engine random(hashvalue);
+	//std::uniform_int_distribution<int> myUnifIntDist(1, 2);
+	for (int i = 0; i < 10; i++){
+		//int rand1 = myUnifIntDist(random);
+		cout << "Rand: " << random_in_range(hashvalue+i) << endl;
+	}
+	
+	hashvalue = hashvalue * 54768;
 	hashFinal = "";
 	if (hashvalue % 10 == 0) hashvalue++;
 	long long tarp;
@@ -131,6 +143,11 @@ void Hash (long long hashvalue, std::string & hashFinal){
 	int betkas;
 	std::vector<int> hashas;
 	for (int i = 0; i < 32; i++){
+
+		int rand;
+		std::default_random_engine myRandomEngine(hashvalue);
+		rand = myRandomEngine();
+
 		tarp = (i + 1) * 57;
 		apkeistas = (hashvalue * tarp) % 100;
 		tarp2 = (apkeistas % 10) * 10 + (apkeistas / 10);
@@ -195,5 +212,15 @@ void Hash (long long hashvalue, std::string & hashFinal){
 		c = hashas[i];
 		hashFinal = hashFinal + c;
 	}
+}
 
+int random_in_range(int min, int max, int seed) {
+    std::default_random_engine random(seed);
+    std::uniform_int_distribution<int> uni(min, max);
+    return uni(random);
+}
+
+int random_in_range(int seed) {
+    std::default_random_engine random(seed);
+    return random();
 }
