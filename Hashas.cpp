@@ -12,29 +12,28 @@
 #include <algorithm>
 #include <random>
 #include <iterator> 
+#include <map>
 
 using std::cout;
 using std::endl;
 
 void Hash (long long hashvalue, std::string & hashFinal);
 void Skaitymas (long long & hashvalue);
-int random_in_range(int min, int max, int seed);
-int random_in_range(int seed);
 
 int main(int argc, char const *argv[]){
 	std::string input, hashFinal;
-	int choice;
+	std::string choice;
 	long long hashvalue = 0;
 	
 
 	while (true){
 		cout << "Jei norite skaityti duomenis is failu spauskite 1, jei norite ivesti spauskite 2" << endl;
 		std::cin >> choice;
-		if (choice == 1 || choice == 2){
+		if (int(choice[0]) == 49 || int(choice[0]) == 50){
 			break;
 		} 
 	}
-	if (choice == 2){
+	if (int(choice[0]) == 50){
 		cout << "Iveskite norima simboliu eilute" << endl;
 		std::cin.ignore();
 		getline(std::cin, input);
@@ -42,11 +41,11 @@ int main(int argc, char const *argv[]){
 			hashvalue = hashvalue + int(input[i]);
 		}
 	}
-	if (choice == 1){
+	if (int(choice[0]) == 49){
 		Skaitymas(hashvalue);
 	}
 
-	hashvalue = hashvalue + int(input[0]) + int(input[1]);
+	hashvalue = hashvalue + input.size();
 
 	Hash(hashvalue, hashFinal);
 
@@ -66,13 +65,15 @@ void Skaitymas (long long & hashvalue){
 		cout << "5-as - Tekstas" << endl;
 		cout << "6-as - Tekstas, su vienu skirtingu simboliu" << endl;
 		cout << "7-as - Tuscias failas" << endl;
-		cout << "8-as - Konstitucijos eiluciu hashinimas" << endl;
+		cout << "8-as - Collision testas" << endl;
 		std::cin >> uzduotis;
 		if (uzduotis >= 1 && uzduotis <= 8) break;
 		else cout << "Blogai pasirinkote faila" << endl;
 	}
 
     if (uzduotis == 8){
+    	//Generuoti();
+    	//std::map<std::string, int>::iterator it = mapOfWords.begin();
     	std::ifstream fd("konstitucija.md");
 		std::string input, hashFinal;
 		std::vector<int> hashas;
@@ -89,6 +90,7 @@ void Skaitymas (long long & hashvalue){
 			for (int i = 0; i < input.size(); i++){
 				hashvalue = hashvalue + int(input[i]);
 			}
+			hashvalue = hashvalue * input.size();
 
 			auto startas = std::chrono::system_clock::now();
 			Hash(hashvalue, hashFinal);
@@ -123,87 +125,27 @@ void Skaitymas (long long & hashvalue){
 }
 
 void Hash (long long hashvalue, std::string & hashFinal){
-	//Paverti kiekviena simboli i skaiciu, tuos skaicius sudedi, padaugini is kazko, kad gauti kosmosa,
-	//padalint i dalis, kad gaut 64 simbolius
-	//char kodai (skaiciai ir raides) nuo 48-57 iki 97-102
-	
-	//std::default_random_engine random(hashvalue);
-	//std::uniform_int_distribution<int> myUnifIntDist(1, 2);
-	for (int i = 0; i < 10; i++){
-		//int rand1 = myUnifIntDist(random);
-		cout << "Rand: " << random_in_range(hashvalue+i) << endl;
-	}
 	
 	hashvalue = hashvalue * 54768;
 	hashFinal = "";
+	std::mt19937 generator;
+    std::uniform_int_distribution<int> uni(1, 2);
+    std::uniform_int_distribution<int> uniNumber(48, 57);
+    std::uniform_int_distribution<int> uniLetter(97, 102);
+    generator.seed(hashvalue);
+
 	if (hashvalue % 10 == 0) hashvalue++;
-	long long tarp;
-	int tarp2;
-	int apkeistas;
-	int betkas;
+	int rand;
 	std::vector<int> hashas;
 	for (int i = 0; i < 32; i++){
+		rand = uni(generator);
+		if (rand == 1){
+			hashas.push_back(uniNumber(generator));
+			continue;
+		}
 
-		int rand;
-		std::default_random_engine myRandomEngine(hashvalue);
-		rand = myRandomEngine();
-
-		tarp = (i + 1) * 57;
-		apkeistas = (hashvalue * tarp) % 100;
-		tarp2 = (apkeistas % 10) * 10 + (apkeistas / 10);
-		if (tarp2 == 1 || tarp2 == 2){
-			hashas.push_back((double)tarp2 * 53);
-			continue;
-		}
-		if (tarp2 > 0 && tarp2 <= 7){
-			hashas.push_back((double)tarp2 * 17);
-			continue;
-		}
-		if (tarp2 < 19 && tarp2 > 7){
-			hashas.push_back((double)tarp2 * 6.8);
-			continue;
-		}
-		if (tarp2 < 48 && tarp2 >= 19){
-			betkas = (double)tarp2 * 2.6;
-			hashas.push_back(betkas);
-			continue;
-		}
-		if (tarp2 >= 48){
-			hashas.push_back(tarp2);
-			continue;
-		}
-	}
-	for (int i = 0; i < hashas.size(); i++){
-		if (hashas[i] > 57 && hashas[i] <= 67){
-			hashas[i] = hashas[i] - 10;
-			continue;
-		}
-		if (hashas[i] > 67 && hashas[i] <= 77){
-			hashas[i] = hashas[i] - 20;
-			continue;
-		}
-		if (hashas[i] > 77 && hashas[i] <= 87){
-			hashas[i] = hashas[i] - 30;
-			continue;
-		}
-		if (hashas[i] > 87 && hashas[i] <= 92){
-			hashas[i] = hashas[i] + 10;
-			continue;
-		}
-		if (hashas[i] > 92 && hashas[i] < 97){
-			hashas[i] = hashas[i] + 6;
-			continue;
-		}
-		if (hashas[i] > 102 && hashas[i] <= 108){
-			hashas[i] = hashas[i] - 6;
-			continue;
-		}
-		if (hashas[i] > 108 && hashas[i] <= 114){
-			hashas[i] = hashas[i] - 12;
-			continue;
-		}
-		if (hashas[i] > 114 && hashas[i] <= 122){
-			hashas[i] = hashas[i]/2 - 6;
+		if (rand == 2){
+			hashas.push_back(uniLetter(generator));
 			continue;
 		}
 	}
@@ -212,15 +154,4 @@ void Hash (long long hashvalue, std::string & hashFinal){
 		c = hashas[i];
 		hashFinal = hashFinal + c;
 	}
-}
-
-int random_in_range(int min, int max, int seed) {
-    std::default_random_engine random(seed);
-    std::uniform_int_distribution<int> uni(min, max);
-    return uni(random);
-}
-
-int random_in_range(int seed) {
-    std::default_random_engine random(seed);
-    return random();
 }
