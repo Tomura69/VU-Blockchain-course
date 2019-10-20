@@ -13,6 +13,7 @@
 #include <random>
 #include <iterator> 
 #include <map>
+#include <bitset>
 
 using std::cout;
 using std::endl;
@@ -22,6 +23,7 @@ void Skaitymas (long long & hashvalue);
 void Generuoti ();
 void Test_Konstitucija (long long & hashvalue);
 void Test_Paprastas (int uzduotis, long long & hashvalue);
+void Test_Binary ();
 
 int main(int argc, char const *argv[]){
 	std::string input, hashFinal;
@@ -41,7 +43,9 @@ int main(int argc, char const *argv[]){
 		std::cin.ignore();
 		getline(std::cin, input);
 		for (int i = 0; i < input.size(); i++){
-			hashvalue = hashvalue + int(input[i]);
+			hashvalue = hashvalue + int(input[i]) + i;
+			hashvalue += (hashvalue << 10);
+			hashvalue ^= (hashvalue >> 6);
 		}
 		hashvalue = hashvalue + input.size() * input[0] - input[1];
 		Hash(hashvalue, hashFinal);
@@ -93,7 +97,9 @@ void Skaitymas (long long & hashvalue){
 		while (!fd.eof()){
 			getline(fd, input);
 			for (int i = 0; i < input.size(); i++){
-				hashvalue = hashvalue + int(input[i]);
+				hashvalue = hashvalue + int(input[i]) + i;
+				hashvalue += (hashvalue << 10);
+				hashvalue ^= (hashvalue >> 6);
 			}
 			hashvalue = hashvalue + input.size() * input[0] - input[1];
 			if (fr.is_open()){
@@ -107,14 +113,15 @@ void Skaitymas (long long & hashvalue){
     	fd.close();
 		fr.close();
 		std::map<std::string, unsigned int> hasher;
-	    std::ifstream fd1("hashai.md");
+	    std::ifstream fd1("Test/hashai.md");
 	    std::string z;
 
-	    for (int i = 0; i < 100000; i++) {
+	    for (int i = 0; i < 1000000; i++) {
 	        fd1 >> z;
 	        hasher.insert(std::pair<std::string, unsigned int>(z, 1));
 	    }
-	    std::cout << "Nesutapusiu hashu skaicius: " << hasher.size() << " is " << 100000 << endl;
+	    std::cout << "Nesutapusiu hashu skaicius: " << hasher.size() << " is " << 1000000 << endl;
+	    cout << "Sutapimo procentas: " << double(hasher.size() / 1000000) << "%" << endl;
 	    fd1.close();
 	}
     else{
@@ -126,7 +133,7 @@ void Skaitymas (long long & hashvalue){
 }
 
 void Test_Konstitucija (long long & hashvalue){
-	std::ifstream fd("konstitucija.md");
+	std::ifstream fd("Tests/konstitucija.md");
 	std::string input, hashFinal;
 	std::vector<int> hashas;
 	hashvalue = 0;
@@ -139,7 +146,9 @@ void Test_Konstitucija (long long & hashvalue){
 	while (!fd.eof()){
 		getline(fd, input);
 		for (int i = 0; i < input.size(); i++){
-			hashvalue = hashvalue + int(input[i]);
+			hashvalue = hashvalue + int(input[i]) + i;
+			hashvalue += (hashvalue << 10);
+			hashvalue ^= (hashvalue >> 6);
 		}
 		hashvalue = hashvalue + input.size() * input[0] - input[1];
 		auto startas = std::chrono::system_clock::now();
@@ -155,7 +164,7 @@ void Test_Konstitucija (long long & hashvalue){
 
 void Test_Paprastas (int uzduotis, long long & hashvalue){
 	std::string s = std::to_string(uzduotis);
-	std::ifstream fd("test" + s + ".md");
+	std::ifstream fd("Tests/test" + s + ".md");
 	std::string input;
 
 	if (!fd) {
@@ -167,7 +176,9 @@ void Test_Paprastas (int uzduotis, long long & hashvalue){
 	while (!fd.eof()){
 		getline(fd, input);
 		for (int i = 0; i < input.size(); i++){
-			hashvalue = hashvalue + int(input[i]);
+			hashvalue = hashvalue + int(input[i]) + i;
+			hashvalue += (hashvalue << 10);
+			hashvalue ^= (hashvalue >> 6);
 		}
 	}
 	hashvalue = hashvalue + input.size() * input[0]  - input[1];
@@ -182,7 +193,7 @@ void Generuoti (){
     std::ofstream fr("generuoti_stringai.md");
     char rand;
     if (fr.is_open()){
-        for (int i = 1; i < 100000; i++){
+        for (int i = 1; i < 1000000; i++){
             for (int y = 0; y < 5; y++){
             	rand = range(mt);
                 fr << rand;
@@ -203,7 +214,7 @@ void Generuoti (){
 
 void Hash (long long hashvalue, std::string & hashFinal){
 	
-	hashvalue = hashvalue * 54768;
+	hashvalue = hashvalue * 5478;
 	hashFinal = "";
 	std::mt19937 generator;
     std::uniform_int_distribution<int> uni(1, 2);

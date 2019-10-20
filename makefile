@@ -1,4 +1,5 @@
 Run:
-	g++ Hashas.cpp -o Hashas
+	g++ Hash.cpp -o Hashas
 	./Hashas
 	rm Hashas
+	rm generuoti_stringai.md hashai.md
