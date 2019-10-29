@@ -10,6 +10,9 @@ int main(){
     time_t transaction2Time;
     Transaction transaction2(0.2233, "Jonas", "Oskaras", time(&transaction2Time));
     tomasCoin.addBlock(transaction2);
+
+    std::vector<Block> kazkas = tomasCoin.getChain();
+    kazkas[0].mineBlock(4);
  
     tomasCoin.printChain();
 

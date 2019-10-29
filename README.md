@@ -65,3 +65,9 @@ Susigeneruoti bent 100 000 atsitiktinių simbolių eilučių (string'ų) porų i
 | 1  | Nesutapusiu hashu skaicius: 100000 is 100000 |
 | 2  | Nesutapusiu hashu skaicius: 100000 is 100000  |
 | 3  | Nesutapusiu hashu skaicius: 100000 is 100000 |
+
+# Pirmas relysas
+
+## v1.0
+
+comming soon...

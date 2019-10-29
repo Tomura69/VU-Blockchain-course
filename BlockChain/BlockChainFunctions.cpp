@@ -7,17 +7,31 @@ Transaction::Transaction(double a, std::string sender, std::string receiver, tim
 	timeStamp = time;
 }
 
-Block::Block(int idx, Transaction t, size_t pHash){
+Block::Block(int idx, Transaction t, std::string pHash){
 	index = idx;
 	data = t;
 	prevHash = pHash;
 	blockHash = hashGenerator();
 }
 
-size_t Block::hashGenerator(){
-	std::string toHash = std::to_string(data.amount) + data.senderKey + data.receiverKey + std::to_string(data.timeStamp);
+void Block::mineBlock(int target){
+    std::string dificulty = "";
+    std::string hash;
+    for (int i = 0; i < target; i++){
+        dificulty += "0";
+    }
+    do{
+        hashKey++;
+        hash = hashGenerator();
+    } while(hash.substr(0, target) != dificulty);
+
+    cout << "Block mined: " << hash << endl;
+}
+
+std::string Block::hashGenerator(){
+	std::string toHash = std::to_string(data.amount) + std::to_string(hashKey) + data.senderKey + data.receiverKey + std::to_string(data.timeStamp);
 	int hashvalue = 0;
-	size_t hashFinal = 0;
+	std::string hashFinal = "";
 
 	for (int i = 0; i < toHash.size(); i++){
 		hashvalue = hashvalue + int(toHash[i]) + i;
@@ -56,15 +70,15 @@ size_t Block::hashGenerator(){
 	return hashFinal;
 }
 
-size_t Block::getHash(){
+std::string Block::getHash(){
 	return blockHash;
 }
 
-size_t Block::getPrevHash(){
+std::string Block::getPrevHash(){
 	return prevHash;
 }
 
-size_t Block::getIndex(){
+int Block::getIndex(){
 	return index;
 }
 
@@ -72,39 +86,34 @@ bool Block::isHash(){
 	return hashGenerator() == blockHash;
 }
 
-BlockChain::BlockChain()
-{
+BlockChain::BlockChain(){
     Block genesis = createGenesisBlock();
     chain.push_back(genesis);
 }
 
-std::vector<Block> BlockChain::getChain() {
+std::vector<Block> BlockChain::getChain(){
     return chain;
 }
 
-Block BlockChain::createGenesisBlock()
-{
+Block BlockChain::createGenesisBlock(){
     std::time_t current;
     Transaction d(0, "Genesis", "Genesis", time(&current));
-    Block genesis(0, d, 0);
+    Block genesis(0, d, " ");
     return genesis;
 }
 
-Block BlockChain::getLatestBlock()
-{
+Block BlockChain::getLatestBlock(){
     return chain.back();
 }
 
-void BlockChain::addBlock(Transaction d)
-{
+void BlockChain::addBlock(Transaction d){
     int index = (int)chain.size();
-    std::size_t previousHash = (int)chain.size() > 0 ? getLatestBlock().getHash() : 0;
+    std::string previousHash = (int)chain.size() > 0 ? getLatestBlock().getHash() : 0;
     Block newBlock(index, d, previousHash);
     chain.push_back(newBlock);
 }
 
-bool BlockChain::isChainValid()
-{
+bool BlockChain::isChainValid(){
     std::vector<Block>::iterator it;
     
     for (it = chain.begin(); it != chain.end(); ++it)
@@ -124,24 +133,24 @@ bool BlockChain::isChainValid()
             }
         }
     }
-    
     return true;
 }
 
-void BlockChain::printChain() {
+void BlockChain::printChain(){
     std::vector<Block>::iterator it;
     
     for (it = chain.begin(); it != chain.end(); ++it)
     {
         Block currentBlock = *it;
-        printf("\n\nBlock ===================================");
-        printf("\nIndex: %d", currentBlock.getIndex());
-        printf("\nAmount: %f", currentBlock.data.amount);
-        printf("\nSenderKey: %s", currentBlock.data.senderKey.c_str());
-        printf("\nReceiverKey: %s", currentBlock.data.receiverKey.c_str());
-        printf("\nTimestamp: %ld", currentBlock.data.timeStamp);
-        printf("\nHash: %zu", currentBlock.getHash());
-        printf("\nPrevious Hash: %zu", currentBlock.getPrevHash());
-        printf("\nIs Block Valid?: %d", currentBlock.isHash());
+        cout << "Block ===================================" << endl;
+        cout << "Index: " << currentBlock.getIndex() << endl;
+        cout << "Amount: " << currentBlock.data.amount << endl;;
+        cout << "SenderKey: " << currentBlock.data.senderKey.c_str() << endl;
+        cout << "ReceiverKey: " << currentBlock.data.receiverKey.c_str() << endl;
+        cout << "Timestamp: " << currentBlock.data.timeStamp << endl;
+        cout << "Hash: " << currentBlock.getHash() << endl;
+        cout << "Previous Hash: " << currentBlock.getPrevHash() << endl;
+        cout << "Is Block Valid?: " << currentBlock.isHash() << endl;
+        cout << endl;
     }
 }

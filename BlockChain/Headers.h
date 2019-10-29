@@ -20,14 +20,16 @@ public:
 class Block {
 private:
 	int index;
-	size_t blockHash;
-	size_t prevHash;
-	size_t hashGenerator();
+	int hashKey = 0;
+	std::string blockHash;
+	std::string prevHash;
+	std::string hashGenerator();
 public:
-	Block(int idx, Transaction t, size_t pHash);
-	size_t getHash();
-	size_t getIndex();
-	size_t getPrevHash();
+	Block(int idx, Transaction t, std::string pHash);
+	void mineBlock(int target);
+	std::string getHash();
+	int getIndex();
+	std::string getPrevHash();
 	Transaction data;
 	bool isHash();
 	~Block(){}
