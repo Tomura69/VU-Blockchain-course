@@ -2,17 +2,34 @@
 #include <vector>
 #include <random>
 #include <iostream>
+#include <chrono>
+#include <cstdint>
+#include <typeinfo>  
 
 using std::cout;
 using std::endl;
+
+class User {
+private:
+	std::string name;
+	std::string lastName;
+	int asmensKodas;
+	std::string key;
+	//Padaryti kad tikrintu balanca (turbut ten kai jau deda tranzakcijas i bloka iskviecia funkcija)
+	double balance;
+public:
+	User(std::string namee, std::string lastNamee, int asmensKodass, double balancee);
+	std::string getKey();
+};
 
 class Transaction {
 public:
 	double amount;
 	std::string senderKey;
 	std::string receiverKey;
-	std::time_t timeStamp;
-	Transaction(double a, std::string sender, std::string receiver, time_t time);
+	std::string transactionHash;
+	std::uint64_t timeStamp;
+	Transaction(double a, User sender, User receiver, uint64_t time);
 	Transaction(){}
 	~Transaction(){}
 };
@@ -20,18 +37,26 @@ public:
 class Block {
 private:
 	int index;
-	int hashKey = 0;
+	int nonce = 0;
 	std::string blockHash;
 	std::string prevHash;
-	std::string hashGenerator();
+	std::string merkelRoot;
+	std::uint64_t timeStamp;
+	int target = 2;
+	bool full = false;
+	std::vector<Transaction> transactions;
+	void setMerkel();
+	friend class BlockChain;
 public:
-	Block(int idx, Transaction t, std::string pHash);
-	void mineBlock(int target);
+	Block(int idx, std::string pHash);
+	std::string mineBlock(int target);
 	std::string getHash();
-	int getIndex();
 	std::string getPrevHash();
-	Transaction data;
-	bool isHash();
+	std::string getMerkel();
+	std::vector<Transaction> getTransactions();
+	int getIndex();
+	bool getFull ();
+	bool isBlock();
 	~Block(){}
 };
 
@@ -42,9 +67,11 @@ private:
 public:
 	BlockChain();
 	std::vector<Block> getChain();
-	void addBlock(Transaction data);
+	void addTransaction(std::vector<Transaction> data);
 	bool isChainValid();
 	Block getLatestBlock();
 	void printChain();
 	~BlockChain(){}
 };
+
+std::string hashGenerator(std::string toHash);

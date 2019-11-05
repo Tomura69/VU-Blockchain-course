@@ -1,73 +1,51 @@
 #include "Headers.h"
 
-Transaction::Transaction(double a, std::string sender, std::string receiver, time_t time){
+User::User(std::string namee, std::string lastNamee, int asmensKodass, double balancee){
+    name = namee;
+    lastName = lastNamee;
+    asmensKodas = asmensKodass;
+    balance = balancee;
+    std::string toHash = std::to_string(asmensKodas) + name + lastName;
+    key = hashGenerator(toHash);
+}
+
+std::string User::getKey(){
+    return key;
+}
+
+Transaction::Transaction(double a, User sender, User receiver, uint64_t time){
 	amount = a;
-	senderKey = sender;
-	receiverKey = receiver;
+	senderKey = sender.getKey();
+	receiverKey = receiver.getKey();
 	timeStamp = time;
+    std::string toHash = std::to_string(timeStamp) + senderKey + receiverKey + std::to_string(amount);
+    transactionHash = hashGenerator(toHash);
 }
 
-Block::Block(int idx, Transaction t, std::string pHash){
+// BLOCK
+
+Block::Block(int idx, std::string pHash){
+    //uint64_t current = timeStamp();
+    timeStamp = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch()).count();//time(&current);
 	index = idx;
-	data = t;
 	prevHash = pHash;
-	blockHash = hashGenerator();
+	blockHash = mineBlock(target);
 }
 
-void Block::mineBlock(int target){
+std::string Block::mineBlock(int target){
     std::string dificulty = "";
     std::string hash;
     for (int i = 0; i < target; i++){
         dificulty += "0";
     }
     do{
-        hashKey++;
-        hash = hashGenerator();
+        nonce++;
+        std::string toHash = std::to_string(index) + std::to_string(nonce) + prevHash + std::to_string(timeStamp);
+        hash = hashGenerator(toHash);
     } while(hash.substr(0, target) != dificulty);
 
     cout << "Block mined: " << hash << endl;
-}
-
-std::string Block::hashGenerator(){
-	std::string toHash = std::to_string(data.amount) + std::to_string(hashKey) + data.senderKey + data.receiverKey + std::to_string(data.timeStamp);
-	int hashvalue = 0;
-	std::string hashFinal = "";
-
-	for (int i = 0; i < toHash.size(); i++){
-		hashvalue = hashvalue + int(toHash[i]) + i;
-		hashvalue += (hashvalue << 10);
-		hashvalue ^= (hashvalue >> 6);
-	}
-	hashvalue = hashvalue + toHash.size() * toHash[0] - toHash[1];
-
-	hashvalue = hashvalue * 5478;
-	std::mt19937 generator;
-    std::uniform_int_distribution<int> uni(1, 2);
-    std::uniform_int_distribution<int> uniNumber(48, 57);
-    std::uniform_int_distribution<int> uniLetter(97, 102);
-    generator.seed(hashvalue);
-
-	if (hashvalue % 10 == 0) hashvalue++;
-	int rand;
-	std::vector<int> hashas;
-	for (int i = 0; i < 32; i++){
-		rand = uni(generator);
-		if (rand == 1){
-			hashas.push_back(uniNumber(generator));
-			continue;
-		}
-
-		if (rand == 2){
-			hashas.push_back(uniLetter(generator));
-			continue;
-		}
-	}
-	char c;
-	for (int i = 0; i < hashas.size(); i++){
-		c = hashas[i];
-		hashFinal = hashFinal + c;
-	}
-	return hashFinal;
+    return hash;
 }
 
 std::string Block::getHash(){
@@ -82,9 +60,38 @@ int Block::getIndex(){
 	return index;
 }
 
-bool Block::isHash(){
-	return hashGenerator() == blockHash;
+std::vector<Transaction> Block::getTransactions(){
+    return transactions;
 }
+
+bool Block::getFull (){
+    return full;
+}
+
+bool Block::isBlock(){
+    std::string toHash = "";
+    for (int i = 0; i < transactions.size(); i++){
+        toHash = toHash + transactions[i].transactionHash;
+    }
+    if (hashGenerator(toHash) == getMerkel())
+        return true;
+    else
+        return false;
+}
+
+void Block::setMerkel(){
+    std::string toHash = "";
+    for (int i = 0; i < transactions.size(); i++){
+        toHash = toHash + transactions[i].transactionHash;
+    }
+    merkelRoot = hashGenerator(toHash);
+}
+
+std::string Block::getMerkel(){
+    return merkelRoot;
+}
+
+// BLOCKCHAIN
 
 BlockChain::BlockChain(){
     Block genesis = createGenesisBlock();
@@ -96,9 +103,7 @@ std::vector<Block> BlockChain::getChain(){
 }
 
 Block BlockChain::createGenesisBlock(){
-    std::time_t current;
-    Transaction d(0, "Genesis", "Genesis", time(&current));
-    Block genesis(0, d, " ");
+    Block genesis(0, " ");
     return genesis;
 }
 
@@ -106,29 +111,78 @@ Block BlockChain::getLatestBlock(){
     return chain.back();
 }
 
-void BlockChain::addBlock(Transaction d){
+void BlockChain::addTransaction(std::vector<Transaction> data){
     int index = (int)chain.size();
-    std::string previousHash = (int)chain.size() > 0 ? getLatestBlock().getHash() : 0;
-    Block newBlock(index, d, previousHash);
-    chain.push_back(newBlock);
+    for (int i = 0; i < index; i++){
+        if (!chain[i].getFull()){
+            int to = chain[i].transactions.size();
+            int from = chain[i].transactions.size();
+            for (int y = chain[i].transactions.size(); y < 100; y++){
+                chain[i].transactions.push_back(data[y]);
+                to++;
+            }
+        chain[i].full = true;
+        chain[i].setMerkel();
+        data.erase(data.begin() + from, data.begin() + to);
+        }
+    }
+    if (data.size() != 0 && !chain[index-1].getFull()){
+        int to = chain[index-1].transactions.size();
+        int from = chain[index-1].transactions.size();
+        for (int i = chain[index-1].transactions.size(); i < 100; i++){
+            chain[index-1].transactions.push_back(data[i]);
+            to++;
+        }
+        chain[index-1].full = true;
+        chain[index-1].setMerkel();
+        data.erase(data.begin() + from, data.begin() + to); 
+    }
+    int countt = (int)chain.size() - 1;
+    if (data.size() != 0 && chain[index-1].getFull()){
+        while (data.size() != 0){
+            std::string prevhash = chain[countt].blockHash;
+            Block block(countt+1, prevhash);
+            if (data.size() > 100){
+                int to = 0;
+                for (int i = 0; i < 100; i++){
+                    block.transactions.push_back(data[i]);
+                    to++;
+                }
+                block.full = true;
+                block.setMerkel();
+                data.erase(data.begin(), data.begin() + to); 
+            }
+            else {
+                for (int i = 0; i < data.size(); i++){
+                    block.transactions.push_back(data[i]);
+                }
+                if (block.transactions.size() == 100){
+                    block.full = true;
+                    block.setMerkel();
+                }
+                else block.setMerkel();
+                data.clear();
+            }
+            chain.push_back(block);
+            countt++;
+        }
+    }
+    else cout << "Kazkas blogai" << endl;
 }
+
 
 bool BlockChain::isChainValid(){
     std::vector<Block>::iterator it;
     
-    for (it = chain.begin(); it != chain.end(); ++it)
-    {
+    for (it = chain.begin(); it != chain.end(); ++it){
         Block currentBlock = *it;
-        if (!currentBlock.isHash())
-        {
+        if (!currentBlock.isBlock()){
             return false;
         }
         
-        if (it != chain.begin())
-        {
+        if (it != chain.begin()){
             Block previousBlock = *(it - 1);
-            if (currentBlock.getPrevHash() != previousBlock.getHash())
-            {
+            if (currentBlock.getPrevHash() != previousBlock.getHash()){
                 return false;
             }
         }
@@ -138,19 +192,64 @@ bool BlockChain::isChainValid(){
 
 void BlockChain::printChain(){
     std::vector<Block>::iterator it;
-    
-    for (it = chain.begin(); it != chain.end(); ++it)
-    {
+    for (it = chain.begin(); it != chain.end(); ++it){
         Block currentBlock = *it;
+        std::vector<Transaction> v = currentBlock.getTransactions();
         cout << "Block ===================================" << endl;
         cout << "Index: " << currentBlock.getIndex() << endl;
-        cout << "Amount: " << currentBlock.data.amount << endl;;
-        cout << "SenderKey: " << currentBlock.data.senderKey.c_str() << endl;
-        cout << "ReceiverKey: " << currentBlock.data.receiverKey.c_str() << endl;
-        cout << "Timestamp: " << currentBlock.data.timeStamp << endl;
         cout << "Hash: " << currentBlock.getHash() << endl;
         cout << "Previous Hash: " << currentBlock.getPrevHash() << endl;
-        cout << "Is Block Valid?: " << currentBlock.isHash() << endl;
+        cout << "Merkel Root: " << currentBlock.getMerkel() << endl;
+        for (int i = 0; i < v.size(); i++){
+            cout << "   Transactions ===================================" << endl;
+            cout << "   Amount: " << v[i].amount << endl;
+            cout << "   SenderKey: " << v[i].senderKey << endl;
+            cout << "   ReceiverKey: " << v[i].receiverKey << endl;
+            cout << "   Timestamp: " << v[i].timeStamp << endl;
+        }
+        cout << "Is Block Valid?: " << currentBlock.isBlock() << endl;
         cout << endl;
     }
+}
+
+std::string hashGenerator(std::string toHash){
+    
+    int hashvalue = 0;
+    std::string hashFinal = "";
+
+    for (int i = 0; i < toHash.size(); i++){
+        hashvalue = hashvalue + int(toHash[i]) + i;
+        hashvalue += (hashvalue << 10);
+        hashvalue ^= (hashvalue >> 6);
+    }
+    hashvalue = hashvalue + toHash.size() * toHash[0] - toHash[1];
+
+    hashvalue = hashvalue * 5478;
+    std::mt19937 generator;
+    std::uniform_int_distribution<int> uni(1, 2);
+    std::uniform_int_distribution<int> uniNumber(48, 57);
+    std::uniform_int_distribution<int> uniLetter(97, 102);
+    generator.seed(hashvalue);
+
+    if (hashvalue % 10 == 0) hashvalue++;
+    int rand;
+    std::vector<int> hashas;
+    for (int i = 0; i < 32; i++){
+        rand = uni(generator);
+        if (rand == 1){
+            hashas.push_back(uniNumber(generator));
+            continue;
+        }
+
+        if (rand == 2){
+            hashas.push_back(uniLetter(generator));
+            continue;
+        }
+    }
+    char c;
+    for (int i = 0; i < hashas.size(); i++){
+        c = hashas[i];
+        hashFinal = hashFinal + c;
+    }
+    return hashFinal;
 }
