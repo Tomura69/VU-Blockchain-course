@@ -42,10 +42,10 @@ private:
 	std::string prevHash;
 	std::string merkelRoot;
 	std::uint64_t timeStamp;
-	int target = 2;
+	int target = 4;
 	bool full = false;
 	std::vector<Transaction> transactions;
-	void setMerkel();
+	void setMerkel(Block & block, std::vector<std::string> tarp);
 	friend class BlockChain;
 public:
 	Block(int idx, std::string pHash);

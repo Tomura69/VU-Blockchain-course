@@ -79,12 +79,21 @@ bool Block::isBlock(){
         return false;
 }
 
-void Block::setMerkel(){
-    std::string toHash = "";
-    for (int i = 0; i < transactions.size(); i++){
-        toHash = toHash + transactions[i].transactionHash;
+void Block::setMerkel(Block & block, std::vector<std::string> tarp){
+    if (tarp.size() > 1){
+        int last = tarp.size() - 1;
+        std::vector<std::string> v;
+        for (int i = 0; i < tarp.size() / 2; i++){
+            std::string toHash = "";
+            toHash = toHash + tarp[i] + tarp[last - i];
+            v.push_back(hashGenerator(toHash));
+        }
+        block.setMerkel(block, v);
+    } 
+    else{
+        block.merkelRoot = tarp[0];
     }
-    merkelRoot = hashGenerator(toHash);
+    
 }
 
 std::string Block::getMerkel(){
@@ -122,7 +131,12 @@ void BlockChain::addTransaction(std::vector<Transaction> data){
                 to++;
             }
         chain[i].full = true;
-        chain[i].setMerkel();
+        std::vector<std::string> vec;
+        for (int y = 0; y < chain[i].transactions.size(); y++){
+            vec.push_back(chain[i].transactions[y].transactionHash);
+        }
+        chain[i].setMerkel(chain[i], vec);
+        vec.clear();
         data.erase(data.begin() + from, data.begin() + to);
         }
     }
@@ -134,7 +148,12 @@ void BlockChain::addTransaction(std::vector<Transaction> data){
             to++;
         }
         chain[index-1].full = true;
-        chain[index-1].setMerkel();
+        std::vector<std::string> vec;
+        for (int y = 0; y < chain[index-1].transactions.size(); y++){
+            vec.push_back(chain[index-1].transactions[y].transactionHash);
+        }
+        chain[index-1].setMerkel(chain[index-1], vec);
+        vec.clear();
         data.erase(data.begin() + from, data.begin() + to); 
     }
     int countt = (int)chain.size() - 1;
@@ -149,7 +168,12 @@ void BlockChain::addTransaction(std::vector<Transaction> data){
                     to++;
                 }
                 block.full = true;
-                block.setMerkel();
+                std::vector<std::string> vec;
+                for (int y = 0; y < block.transactions.size(); y++){
+                    vec.push_back(block.transactions[y].transactionHash);
+                }
+                block.setMerkel(block, vec);
+                vec.clear();
                 data.erase(data.begin(), data.begin() + to); 
             }
             else {
@@ -158,9 +182,20 @@ void BlockChain::addTransaction(std::vector<Transaction> data){
                 }
                 if (block.transactions.size() == 100){
                     block.full = true;
-                    block.setMerkel();
+                    std::vector<std::string> vec;
+                    for (int y = 0; y < block.transactions.size(); y++){
+                        vec.push_back(block.transactions[y].transactionHash);
+                    }
+                    block.setMerkel(block, vec);
+                    vec.clear();
                 }
-                else block.setMerkel();
+                else {
+                    std::vector<std::string> vec;
+                    for (int y = 0; y < block.transactions.size(); y++){
+                        vec.push_back(block.transactions[y].transactionHash);
+                    }
+                    block.setMerkel(block, vec);
+                    vec.clear();}
                 data.clear();
             }
             chain.push_back(block);
@@ -200,13 +235,13 @@ void BlockChain::printChain(){
         cout << "Hash: " << currentBlock.getHash() << endl;
         cout << "Previous Hash: " << currentBlock.getPrevHash() << endl;
         cout << "Merkel Root: " << currentBlock.getMerkel() << endl;
-        for (int i = 0; i < v.size(); i++){
+        /*for (int i = 0; i < v.size(); i++){
             cout << "   Transactions ===================================" << endl;
             cout << "   Amount: " << v[i].amount << endl;
             cout << "   SenderKey: " << v[i].senderKey << endl;
             cout << "   ReceiverKey: " << v[i].receiverKey << endl;
             cout << "   Timestamp: " << v[i].timeStamp << endl;
-        }
+        }*/
         cout << "Is Block Valid?: " << currentBlock.isBlock() << endl;
         cout << endl;
     }
