@@ -13,11 +13,15 @@ std::string User::getKey(){
     return key;
 }
 
+double User::getBalance(){
+    return balance;
+}
+
 Transaction::Transaction(double a, User sender, User receiver, uint64_t time){
-	amount = a;
-	senderKey = sender.getKey();
-	receiverKey = receiver.getKey();
-	timeStamp = time;
+    amount = a;
+    senderKey = sender.getKey();
+    receiverKey = receiver.getKey();
+    timeStamp = time;
     std::string toHash = std::to_string(timeStamp) + senderKey + receiverKey + std::to_string(amount);
     transactionHash = hashGenerator(toHash);
 }
@@ -38,13 +42,23 @@ std::string Block::mineBlock(int target){
     for (int i = 0; i < target; i++){
         dificulty += "0";
     }
-    do{
-        nonce++;
-        std::string toHash = std::to_string(index) + std::to_string(nonce) + prevHash + std::to_string(timeStamp);
-        hash = hashGenerator(toHash);
-    } while(hash.substr(0, target) != dificulty);
+    int bandymai = 0;
+    std::vector<std::string> v;
+    while (v.empty()){
+        int count = 0;
+        do{
+            nonce++;
+            std::string toHash = std::to_string(index) + std::to_string(nonce) + prevHash + std::to_string(timeStamp);
+            hash = hashGenerator(toHash);
+            count++;
+            if (count == 1000) continue;
+        } while(hash.substr(0, target) != dificulty);
+        if (count < 1000) v.push_back(hash);
+        bandymai++;
+    }
 
     cout << "Block mined: " << hash << endl;
+    cout << "Is " << bandymai << " karto" << endl;
     return hash;
 }
 
@@ -69,11 +83,22 @@ bool Block::getFull (){
 }
 
 bool Block::isBlock(){
-    std::string toHash = "";
-    for (int i = 0; i < transactions.size(); i++){
-        toHash = toHash + transactions[i].transactionHash;
+    std::vector<Transaction> v = transactions;
+    while (v.size() > 1){
+        int last = v.size() - 1;
+        int tarp = v.size() / 2;
+        int kiek = 0;
+        for (int i = 0; i < tarp; i++){        
+            std::string toHash = "";
+            toHash = toHash + v[i].transactionHash + v[last - i].transactionHash;
+            v.push_back(Transaction());
+            v[last + i + 1].transactionHash = hashGenerator(toHash);
+            kiek++;
+        }
+        v.erase(v.begin(), v.begin() + last + 1);
     }
-    if (hashGenerator(toHash) == getMerkel())
+    std::string merkel = v[0].transactionHash;
+    if (merkel == getMerkel())
         return true;
     else
         return false;

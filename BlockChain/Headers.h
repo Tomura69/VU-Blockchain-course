@@ -20,6 +20,7 @@ private:
 public:
 	User(std::string namee, std::string lastNamee, int asmensKodass, double balancee);
 	std::string getKey();
+	double getBalance();
 };
 
 class Transaction {
